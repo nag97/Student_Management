@@ -20,6 +20,7 @@ function App() {
   }, []);
 
   function addStudent(e) {
+    console.log(e)
     e.preventDefault();
 
     fetch("http://localhost:3000/students", {
@@ -45,6 +46,19 @@ function App() {
         console.log("Error adding student:", error);
       });
   }
+
+function deleteStudent(id) {
+  fetch(`http://localhost:3000/students/${id}`, {
+    method: "DELETE",
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      setStudents(students.filter((student) => student._id !== id));
+    })
+    .catch((error) => {
+      console.log("Error deleting student:", error);
+    });
+}
 
   return (
     <div className="app">
@@ -129,7 +143,7 @@ function App() {
                   <td>{student.name}</td>
                   <td>{student.age}</td>
                   <td>{student.branch}</td>
-                  <td>View</td>
+                  <td><button>Edit</button> <button onClick={() => deleteStudent(student._id)}>Delete</button></td>
                 </tr>
               ))}
             </tbody>
