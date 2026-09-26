@@ -7,6 +7,10 @@ function App() {
   const [name, setName] = useState("");
   const [age, setAge] = useState("");
   const [branch, setBranch] = useState("");
+  const [editId, setEditId] = useState(null);
+  const [editName, setEditName] = useState("");
+  const [editAge, setEditAge] = useState("");
+  const [editBranch, setEditBranch] = useState("");
 
   useEffect(() => {
     fetch("http://localhost:3000/students")
@@ -47,7 +51,7 @@ function App() {
       });
   }
 
-function deleteStudent(id) {
+  function deleteStudent(id) {
   fetch(`http://localhost:3000/students/${id}`, {
     method: "DELETE",
   })
@@ -57,6 +61,39 @@ function deleteStudent(id) {
     })
     .catch((error) => {
       console.log("Error deleting student:", error);
+    });
+}
+  function editStudent(student) {
+  setEditId(student._id);
+  setEditName(student.name);
+  setEditAge(student.age);
+  setEditBranch(student.branch);
+}
+
+function updateStudent(id) {
+  fetch(`http://localhost:3000/students/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      name: editName,
+      age: Number(editAge),
+      branch: editBranch,
+    }),
+  })
+    .then((res) => res.json())
+    .then((updatedStudent) => {
+      setStudents(
+        students.map((student) =>
+          student._id === id ? updatedStudent : student
+        )
+      );
+
+      setEditId(null);
+    })
+    .catch((error) => {
+      console.log("Error updating student:", error);
     });
 }
 
@@ -137,16 +174,63 @@ function deleteStudent(id) {
               </tr>
             </thead>
 
-            <tbody>
-              {students.map((student) => (
-                <tr key={student._id}>
-                  <td>{student.name}</td>
-                  <td>{student.age}</td>
-                  <td>{student.branch}</td>
-                  <td><button>Edit</button> <button onClick={() => deleteStudent(student._id)}>Delete</button></td>
-                </tr>
-              ))}
-            </tbody>
+<tbody>
+  {students.map((student) => (
+    <tr key={student._id}>
+      {editId === student._id ? (
+        <>
+          <td>
+            <input
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+            />
+          </td>
+
+          <td>
+            <input
+              type="number"
+              value={editAge}
+              onChange={(e) => setEditAge(e.target.value)}
+            />
+          </td>
+
+          <td>
+            <input
+              value={editBranch}
+              onChange={(e) => setEditBranch(e.target.value)}
+            />
+          </td>
+
+          <td>
+            <button onClick={() => updateStudent(student._id)}>
+              Save
+            </button>
+
+            <button onClick={() => setEditId(null)}>
+              Cancel
+            </button>
+          </td>
+        </>
+      ) : (
+        <>
+          <td>{student.name}</td>
+          <td>{student.age}</td>
+          <td>{student.branch}</td>
+
+          <td>
+            <button onClick={() => editStudent(student)}>
+              Edit
+            </button>
+
+            <button onClick={() => deleteStudent(student._id)}>
+              Delete
+            </button>
+          </td>
+        </>
+      )}
+    </tr>
+  ))}
+</tbody>
           </table>
         </section>
       </main>
